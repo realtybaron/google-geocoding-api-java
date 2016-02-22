@@ -75,6 +75,7 @@ public class GeocodingResponse {
             this.address.streetName = component.longName;
           } else if (component.types.contains(ResultType.country.name())) {
             this.address.country = component.longName;
+              this.address.countryCode = component.shortName;
           } else if (component.types.contains(ResultType.subpremise.name())) {
             this.address.unitNumber = component.longName;
           } else if (component.types.contains(ResultType.postal_code.name())) {
