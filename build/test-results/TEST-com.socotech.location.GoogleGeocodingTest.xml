@@ -1,0 +1,14 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<testsuite name="com.socotech.location.GoogleGeocodingTest" tests="5" failures="0" errors="0" timestamp="2016-02-22T21:05:27" hostname="Marcs-MacBook-Pro.local" time="1.116">
+  <properties/>
+  <testcase name="testSubUnitAddress" classname="com.socotech.location.GoogleGeocodingTest" time="0.401"/>
+  <testcase name="testAltLocality" classname="com.socotech.location.GoogleGeocodingTest" time="0.337"/>
+  <testcase name="testImpreciseAddress" classname="com.socotech.location.GoogleGeocodingTest" time="0.11"/>
+  <testcase name="testPreciseAddress" classname="com.socotech.location.GoogleGeocodingTest" time="0.112"/>
+  <testcase name="testReverseGeocoding" classname="com.socotech.location.GoogleGeocodingTest" time="0.153"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+]]></system-err>
+</testsuite>
