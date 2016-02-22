@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a9cef1d0-583d-47cd-9c63-e050090b41c5" name="Default" comment="">
+    <list default="true" id="a9cef1d0-583d-47cd-9c63-e050090b41c5" name="Default" comment="added 'country code'">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/classes/main/com/socotech/location/Address.class" afterPath="$PROJECT_DIR$/build/classes/main/com/socotech/location/Address.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/classes/main/com/socotech/location/GeocodingResponse.class" afterPath="$PROJECT_DIR$/build/classes/main/com/socotech/location/GeocodingResponse.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/classes/test/com/socotech/location/GoogleGeocodingTest.class" afterPath="$PROJECT_DIR$/build/classes/test/com/socotech/location/GoogleGeocodingTest.class" />
@@ -10,14 +10,10 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/1.10/taskArtifacts/fileSnapshots.bin" afterPath="$PROJECT_DIR$/.gradle/1.10/taskArtifacts/fileSnapshots.bin" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/test-results/binary/test/results.bin" afterPath="$PROJECT_DIR$/build/test-results/binary/test/results.bin" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/1.10/taskArtifacts/taskArtifacts.bin" afterPath="$PROJECT_DIR$/.gradle/1.10/taskArtifacts/taskArtifacts.bin" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/socotech/location/Address.java" afterPath="$PROJECT_DIR$/src/main/java/com/socotech/location/Address.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/socotech/location/GeocodingResponse.java" afterPath="$PROJECT_DIR$/src/main/java/com/socotech/location/GeocodingResponse.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/socotech/location/GoogleGeocodingTest.java" afterPath="$PROJECT_DIR$/src/test/java/com/socotech/location/GoogleGeocodingTest.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/test-results/TEST-com.socotech.location.GoogleGeocodingTest.xml" afterPath="$PROJECT_DIR$/build/test-results/TEST-com.socotech.location.GoogleGeocodingTest.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/reports/tests/classes/com.socotech.location.GoogleGeocodingTest.html" afterPath="$PROJECT_DIR$/build/reports/tests/classes/com.socotech.location.GoogleGeocodingTest.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/reports/tests/packages/com.socotech.location.html" afterPath="$PROJECT_DIR$/build/reports/tests/packages/com.socotech.location.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/reports/tests/index.html" afterPath="$PROJECT_DIR$/build/reports/tests/index.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="google-geocoding-api.iws" />
@@ -749,9 +745,15 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
+    <MESSAGE value="added 'country code'" />
+    <option name="LAST_COMMIT_MESSAGE" value="added 'country code'" />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
