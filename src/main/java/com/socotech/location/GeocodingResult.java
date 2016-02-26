@@ -10,12 +10,14 @@ import java.util.List;
  * Created by IntelliJ IDEA. User: marc Date: Jan 14, 2011 Time: 6:06:32 AM
  */
 public class GeocodingResult extends GenericJson {
-  @Key("partial_match")
-  public boolean partial;
-  @Key
-  public Geometry geometry;
-  @Key("types")
-  public List<String> types = Lists.newArrayList();
-  @Key("address_components")
-  public List<AddressComponent> components = Lists.newArrayList();
+    @Key("formatted_address")
+    public String formattedAddress;
+    @Key("partial_match")
+    public boolean partial;
+    @Key
+    public Geometry geometry;
+    @Key("types")
+    public List<String> types = Lists.newArrayList();
+    @Key("address_components")
+    public List<AddressComponent> components = Lists.newArrayList();
 }
