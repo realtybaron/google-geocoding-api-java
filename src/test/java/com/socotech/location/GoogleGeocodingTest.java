@@ -1,6 +1,7 @@
 package com.socotech.location;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -9,6 +10,11 @@ import java.math.BigDecimal;
  * Created by IntelliJ IDEA. User: marc Date: Jan 14, 2011 Time: 6:49:12 AM
  */
 public class GoogleGeocodingTest {
+    @Before
+    public void onSetup() {
+        GoogleGeocoding.setKey("AIzaSyCgk-CIEFxwdBbWxM3VVu0EDwBIEq4ZjpE");
+    }
+
     @Test
     public void testAltLocality() throws Exception {
         Assert.assertEquals("Address is wrong", "2901 Dolan Road, Drummonds, TN 38023, United States", GoogleGeocoding.findByAddress("2901 dolan road drummonds tn").address().toString());

@@ -29,7 +29,7 @@ public class GeocodingUrl extends GenericUrl {
     }
 
     public static GeocodingUrl get() {
-        return new GeocodingUrl("http://maps.googleapis.com/maps/api/geocode/json");
+        return new GeocodingUrl("https://maps.googleapis.com/maps/api/geocode/json");
     }
 
     public static GeocodingUrl get(String address) {
