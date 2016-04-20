@@ -43,7 +43,7 @@ public class GoogleGeocodingTest {
         BigDecimal lat = BigDecimal.valueOf(30.2463500), lng = BigDecimal.valueOf(-97.7386490);
         Address address = GoogleGeocoding.findByGeometry(lat, lng).address();
         Assert.assertEquals("Unable to determine city", "Austin", address.city);
-        Assert.assertEquals("Unable to determine country", "US", address.countryCode);
+        Assert.assertEquals("Unable to determine country code", "US", address.countryCode);
         Assert.assertEquals("Unable to determine country", "United States", address.country);
         Assert.assertEquals("Unable to determine state name", "Texas", address.stateName);
         Assert.assertEquals("Unable to determine postal code", "78704", address.postalCode);
