@@ -37,10 +37,10 @@ public class GoogleGeocoding {
      *
      * @param proxy proxy server
      */
-    public static void useProxy(String proxy) {
+    public static void useProxy(String proxy, int port) {
         NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
         try {
-            InetSocketAddress sa = new InetSocketAddress(Inet4Address.getByName(proxy), 80);
+            InetSocketAddress sa = new InetSocketAddress(Inet4Address.getByName(proxy), port);
             NetHttpTransport transport = builder.setProxy(new Proxy(Proxy.Type.HTTP, sa)).build();
             factory = transport.createRequestFactory(new HttpRequestInitializer() {
                 public void initialize(HttpRequest request) {
