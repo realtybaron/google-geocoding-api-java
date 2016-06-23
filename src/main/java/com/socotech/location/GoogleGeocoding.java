@@ -1,9 +1,11 @@
 package com.socotech.location;
 
+import com.google.api.client.extensions.appengine.http.UrlFetchTransport;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.gson.GsonFactory;
+import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -24,42 +26,13 @@ import java.util.concurrent.ExecutionException;
  */
 public class GoogleGeocoding {
     /**
-     * Set key
-     *
-     * @param key server key
-     */
-    public static void setKey(String key) {
-        GoogleGeocoding.key = key;
-    }
-
-    /**
-     * Rebuild transport using a proxy
-     *
-     * @param proxy proxy server
-     */
-    public static void useProxy(String proxy, int port) {
-        NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
-        try {
-            InetSocketAddress sa = new InetSocketAddress(Inet4Address.getByName(proxy), port);
-            NetHttpTransport transport = builder.setProxy(new Proxy(Proxy.Type.HTTP, sa)).build();
-            factory = transport.createRequestFactory(new HttpRequestInitializer() {
-                public void initialize(HttpRequest request) {
-                    request.setParser(new JsonObjectParser(gsonFactory));
-                }
-            });
-        } catch (UnknownHostException e) {
-            logger.warn(e.getMessage(), e);
-        }
-    }
-
-    /**
      * Use free-text address to determine geo location
      *
      * @param address free-text address
      * @return geometry
      * @throws IOException in case of failure
      */
-    public static GeocodingResponse findByAddress(String address) throws IOException {
+    public GeocodingResponse findByAddress(String address) throws IOException {
         try {
             return addressCache.get(address);
         } catch (ExecutionException e) {
@@ -76,7 +49,7 @@ public class GoogleGeocoding {
      * @return address
      * @throws IOException in case of failure
      */
-    public static GeocodingResponse findByGeometry(BigDecimal lat, BigDecimal lng) throws IOException {
+    public GeocodingResponse findByGeometry(BigDecimal lat, BigDecimal lng) throws IOException {
         lat = lat.setScale(6, RoundingMode.HALF_EVEN);
         lng = lng.setScale(6, RoundingMode.HALF_EVEN);
         try {
@@ -91,50 +64,97 @@ public class GoogleGeocoding {
     }
 
     /**
+     * Build internal address cache
+     */
+    private void buildCache(int size) {
+        addressCache = CacheBuilder.newBuilder().maximumSize(size).build(new CacheLoader<String, GeocodingResponse>() {
+            @Override
+            public GeocodingResponse load(String address) throws Exception {
+                try {
+                    GeocodingUrl url = GeocodingUrl.get(address);
+                    HttpRequest request = factory.buildGetRequest(url);
+                    return request.execute().parseAs(GeocodingResponse.class);
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                    return null;
+                }
+            }
+        });
+    }
+
+    /**
      * Key
      */
-    private static String key;
+    private String key;
     /**
      * Logger
      */
-    private static Logger logger;
-    /**
-     * Gson factory
-     */
-    private static GsonFactory gsonFactory = new GsonFactory();
+    private Logger logger;
     /**
      * Request Factory
      */
-    private static HttpRequestFactory factory;
+    private HttpRequestFactory factory;
     /**
      * cache used to reduce total requests to Google's Geocoding service
      */
-    private static LoadingCache<String, GeocodingResponse> addressCache = CacheBuilder.newBuilder().maximumSize(100).build(new CacheLoader<String, GeocodingResponse>() {
-        @Override
-        public GeocodingResponse load(String address) throws Exception {
-            try {
-                GeocodingUrl url = GeocodingUrl.get(address);
-                HttpRequest request = factory.buildGetRequest(url);
-                return request.execute().parseAs(GeocodingResponse.class);
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
-                return null;
-            }
-        }
-    });
+    private LoadingCache<String, GeocodingResponse> addressCache;
 
-    /**
-     * Initialize class
-     */
-    static {
-        // build logger
-        logger = LoggerFactory.getLogger(GoogleGeocoding.class);
-        // build transport
-        HttpTransport transport = new NetHttpTransport();
-        factory = transport.createRequestFactory(new HttpRequestInitializer() {
-            public void initialize(HttpRequest request) {
-                request.setParser(new JsonObjectParser(gsonFactory));
+    public static class Builder {
+        private int cacheSize = 100;
+        private Proxy proxy;
+        private String apiKey;
+        private boolean appEngine;
+
+        public Builder proxy(String s, int i) throws UnknownHostException {
+            Preconditions.checkNotNull(s, "Proxy address cannot be null");
+            Preconditions.checkArgument(i > 0, "Proxy port is invalid");
+            InetSocketAddress sa = new InetSocketAddress(Inet4Address.getByName(s), i);
+            this.proxy = new Proxy(Proxy.Type.HTTP, sa);
+            return this;
+        }
+
+        public Builder apiKey(String key) {
+            this.apiKey = key;
+            return this;
+        }
+
+        public Builder appEngine(boolean b) {
+            this.appEngine = b;
+            return this;
+        }
+
+        public Builder cacheSize(int size) {
+            this.cacheSize = size;
+            return this;
+        }
+
+        public GoogleGeocoding build() {
+            GoogleGeocoding geocoder = new GoogleGeocoding();
+            // set key
+            geocoder.key = apiKey;
+            // build logger
+            geocoder.logger = LoggerFactory.getLogger(GoogleGeocoding.class);
+            // build transport
+            HttpTransport transport;
+            if (appEngine) {
+                transport = new UrlFetchTransport();
+            } else {
+                NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
+                if (proxy != null) {
+                    builder.setProxy(proxy);
+                }
+                transport = builder.build();
             }
-        });
+            // build factory
+            geocoder.factory = transport.createRequestFactory(new HttpRequestInitializer() {
+                public void initialize(HttpRequest request) {
+                    request.setParser(new JsonObjectParser(new GsonFactory()));
+                }
+            });
+            // address cache
+            geocoder.buildCache(cacheSize);
+            // return product
+            return geocoder;
+        }
     }
 }

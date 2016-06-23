@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/google-geocoding-api.iml" filepath="$PROJECT_DIR$/google-geocoding-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/google-geocoding-api.iml" filepath="$PROJECT_DIR$/.idea/modules/google-geocoding-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/google-geocoding-api_main.iml" filepath="$PROJECT_DIR$/.idea/modules/google-geocoding-api_main.iml" group="google-geocoding-api" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/google-geocoding-api_test.iml" filepath="$PROJECT_DIR$/.idea/modules/google-geocoding-api_test.iml" group="google-geocoding-api" />
     </modules>
   </component>
 </project>
