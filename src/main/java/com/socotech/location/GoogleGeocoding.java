@@ -4,7 +4,6 @@ import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -33,8 +32,18 @@ public class GoogleGeocoding {
         GoogleGeocoding.key = key;
     }
 
-    public static void setProxy(String proxy) {
-        GoogleGeocoding.proxy = proxy;
+    /**
+     * Rebuild transport using a proxy
+     *
+     * @param proxy proxy server
+     */
+    public static void useProxy(String proxy) {
+        NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
+        try {
+            builder.setProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(Inet4Address.getByName(proxy), 80)));
+        } catch (UnknownHostException e) {
+            logger.warn(e.getMessage(), e);
+        }
     }
 
     /**
@@ -48,7 +57,7 @@ public class GoogleGeocoding {
         try {
             return addressCache.get(address);
         } catch (ExecutionException e) {
-            log.debug(e.getMessage());
+            logger.debug(e.getMessage());
             throw new IOException(e);
         }
     }
@@ -70,7 +79,7 @@ public class GoogleGeocoding {
             HttpRequest request = factory.buildGetRequest(url);
             return request.execute().parseAs(GeocodingResponse.class);
         } catch (HttpResponseException e) {
-            log.debug(e.getStatusMessage());
+            logger.debug(e.getStatusMessage());
             throw e;
         }
     }
@@ -80,21 +89,17 @@ public class GoogleGeocoding {
      */
     private static String key;
     /**
-     *
-     */
-    private static String proxy;
-    /**
      * Logger
      */
-    private static final Logger log;
+    private static Logger logger;
     /**
      * Gson factory
      */
-    private static final GsonFactory gsonFactory = new GsonFactory();
+    private static GsonFactory gsonFactory = new GsonFactory();
     /**
      * Request Factory
      */
-    private static final HttpRequestFactory factory;
+    private static HttpRequestFactory factory;
     /**
      * cache used to reduce total requests to Google's Geocoding service
      */
@@ -106,7 +111,7 @@ public class GoogleGeocoding {
                 HttpRequest request = factory.buildGetRequest(url);
                 return request.execute().parseAs(GeocodingResponse.class);
             } catch (Exception e) {
-                log.error(e.getMessage(), e);
+                logger.error(e.getMessage(), e);
                 return null;
             }
         }
@@ -117,19 +122,10 @@ public class GoogleGeocoding {
      */
     static {
         // build logger
-        log = LoggerFactory.getLogger(GoogleGeocoding.class);
+        logger = LoggerFactory.getLogger(GoogleGeocoding.class);
         // build transport
-        NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
-        if (!Strings.isNullOrEmpty(proxy)) {
-            try {
-                builder.setProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(Inet4Address.getByName(proxy), 80)));
-            } catch (UnknownHostException e) {
-                log.warn(e.getMessage(), e);
-            }
-        }
-        HttpTransport transport = builder.build();
+        HttpTransport transport = new NetHttpTransport();
         factory = transport.createRequestFactory(new HttpRequestInitializer() {
-            @Override
             public void initialize(HttpRequest request) {
                 request.setParser(new JsonObjectParser(gsonFactory));
             }
