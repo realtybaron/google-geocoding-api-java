@@ -40,7 +40,13 @@ public class GoogleGeocoding {
     public static void useProxy(String proxy) {
         NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
         try {
-            builder.setProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(Inet4Address.getByName(proxy), 80)));
+            InetSocketAddress sa = new InetSocketAddress(Inet4Address.getByName(proxy), 80);
+            NetHttpTransport transport = builder.setProxy(new Proxy(Proxy.Type.HTTP, sa)).build();
+            factory = transport.createRequestFactory(new HttpRequestInitializer() {
+                public void initialize(HttpRequest request) {
+                    request.setParser(new JsonObjectParser(gsonFactory));
+                }
+            });
         } catch (UnknownHostException e) {
             logger.warn(e.getMessage(), e);
         }
