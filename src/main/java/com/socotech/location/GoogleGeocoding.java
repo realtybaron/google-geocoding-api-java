@@ -4,6 +4,7 @@ import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -13,6 +14,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.Inet4Address;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -26,6 +31,10 @@ public class GoogleGeocoding {
      */
     public static void setKey(String key) {
         GoogleGeocoding.key = key;
+    }
+
+    public static void setProxy(String proxy) {
+        GoogleGeocoding.proxy = proxy;
     }
 
     /**
@@ -71,6 +80,10 @@ public class GoogleGeocoding {
      */
     private static String key;
     /**
+     *
+     */
+    private static String proxy;
+    /**
      * Logger
      */
     private static final Logger log;
@@ -106,7 +119,15 @@ public class GoogleGeocoding {
         // build logger
         log = LoggerFactory.getLogger(GoogleGeocoding.class);
         // build transport
-        HttpTransport transport = new NetHttpTransport();
+        NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
+        if (!Strings.isNullOrEmpty(proxy)) {
+            try {
+                builder.setProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(Inet4Address.getByName(proxy), 80)));
+            } catch (UnknownHostException e) {
+                log.warn(e.getMessage(), e);
+            }
+        }
+        HttpTransport transport = builder.build();
         factory = transport.createRequestFactory(new HttpRequestInitializer() {
             @Override
             public void initialize(HttpRequest request) {
