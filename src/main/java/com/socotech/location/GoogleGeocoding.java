@@ -137,7 +137,7 @@ public class GoogleGeocoding {
             // build transport
             HttpTransport transport;
             if (appEngine) {
-                transport = new UrlFetchTransport();
+                transport = UrlFetchTransport.getDefaultInstance();
             } else {
                 NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
                 if (proxy != null) {
