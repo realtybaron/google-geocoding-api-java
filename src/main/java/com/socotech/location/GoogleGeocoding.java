@@ -118,8 +118,8 @@ public class GoogleGeocoding {
             return this;
         }
 
-        public Builder appEngine(boolean b) {
-            this.appEngine = b;
+        public Builder appEngine() {
+            this.appEngine = true;
             return this;
         }
 
