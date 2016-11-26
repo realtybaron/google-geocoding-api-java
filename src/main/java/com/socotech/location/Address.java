@@ -36,11 +36,11 @@ public class Address {
      * @return line 2
      */
     public String line2() {
-        return new StringBuilder(this.city).append(", ").append(this.stateAbbreviation).append(' ').append(this.postalCode).toString();
+        return this.city + ", " + this.stateAbbreviation + ' ' + this.postalCode;
     }
 
     @Override
     public String toString() {
-        return new StringBuilder(line1()).append(", ").append(line2()).append(", ").append(this.country).toString();
+        return line1() + ", " + line2() + ", " + this.country;
     }
 }
