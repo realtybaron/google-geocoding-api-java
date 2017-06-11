@@ -1,5 +1,7 @@
 package com.socotech.location;
 
+import java.util.EnumSet;
+
 /**
  * Created by IntelliJ IDEA.
  * User: marc
@@ -29,5 +31,7 @@ public enum ResultType {
   point_of_interest,
   administrative_area_level_1,
   administrative_area_level_2,
-  administrative_area_level_3
+    administrative_area_level_3;
+
+    public static final EnumSet<ResultType> PRECISE = EnumSet.of(premise, subpremise, street_address);
 }

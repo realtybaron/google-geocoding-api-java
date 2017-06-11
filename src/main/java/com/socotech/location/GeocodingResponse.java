@@ -1,10 +1,12 @@
 package com.socotech.location;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.google.api.client.util.Key;
+import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA. User: marc Date: Jan 14, 2011 Time: 6:06:32 AM
@@ -30,7 +32,12 @@ public class GeocodingResponse {
             return false;
         } else {
             List<String> types = this.results.iterator().next().types;
-            return types.contains(ResultType.street_address.name());
+            List<ResultType> typesAsEnums = Lists.transform(types, new Function<String, ResultType>() {
+                public ResultType apply(String input) {
+                    return ResultType.valueOf(input);
+                }
+            });
+            return !Collections.disjoint(typesAsEnums, ResultType.PRECISE);
         }
     }
 
