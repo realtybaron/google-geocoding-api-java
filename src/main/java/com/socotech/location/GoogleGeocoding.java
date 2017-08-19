@@ -1,17 +1,5 @@
 package com.socotech.location;
 
-import com.google.api.client.extensions.appengine.http.UrlFetchTransport;
-import com.google.api.client.http.*;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonObjectParser;
-import com.google.api.client.json.gson.GsonFactory;
-import com.google.common.base.Preconditions;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -20,6 +8,22 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.google.api.client.extensions.appengine.http.UrlFetchTransport;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestFactory;
+import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.http.HttpResponseException;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonObjectParser;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.common.base.Preconditions;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 /**
  * Created by IntelliJ IDEA. User: marc Date: Jan 14, 2011 Time: 6:13:33 AM
@@ -36,7 +40,7 @@ public class GoogleGeocoding {
         try {
             return addressCache.get(address);
         } catch (ExecutionException e) {
-            logger.debug(e.getMessage());
+            logger.log(Level.SEVERE, e.getMessage(), e);
             throw new IOException(e);
         }
     }
@@ -58,7 +62,7 @@ public class GoogleGeocoding {
             HttpRequest request = factory.buildGetRequest(url);
             return request.execute().parseAs(GeocodingResponse.class);
         } catch (HttpResponseException e) {
-            logger.debug(e.getStatusMessage());
+            logger.log(Level.INFO, e.getStatusMessage());
             throw e;
         }
     }
@@ -75,7 +79,7 @@ public class GoogleGeocoding {
                     HttpRequest request = factory.buildGetRequest(url);
                     return request.execute().parseAs(GeocodingResponse.class);
                 } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
+                    logger.log(Level.SEVERE, e.getMessage(), e);
                     return null;
                 }
             }
@@ -133,7 +137,7 @@ public class GoogleGeocoding {
             // set key
             geocoder.key = apiKey;
             // build logger
-            geocoder.logger = LoggerFactory.getLogger(GoogleGeocoding.class);
+            geocoder.logger = Logger.getLogger(GoogleGeocoding.class.getName());
             // build transport
             HttpTransport transport;
             if (appEngine) {
