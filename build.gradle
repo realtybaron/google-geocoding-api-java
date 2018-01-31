@@ -1,5 +1,4 @@
 apply plugin: 'java'
-apply plugin: 'maven'
 
 group = 'com.socotech.location'
 version = '1.0-SNAPSHOT'
