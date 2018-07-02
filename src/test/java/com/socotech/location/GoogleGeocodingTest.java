@@ -43,7 +43,7 @@ public class GoogleGeocodingTest {
     public void testSubUnitAddress() throws Exception {
         GeocodingResponse response = geocoder.findByAddress("505 West End Avenue Unit 11B New York, NY 10024");
         Assert.assertTrue("Sub Unit Address is imprecise", response.isPrecise("11B"));
-        Assert.assertEquals("Unable to parse unit number", "11b", response.address().unitNumber);
+        Assert.assertEquals("Unable to parse unit number", "11B", response.address().unitNumber);
     }
 
     @Test

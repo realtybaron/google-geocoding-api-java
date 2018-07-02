@@ -1,7 +1,9 @@
 package com.socotech.location;
 
-import com.google.api.client.extensions.appengine.http.UrlFetchTransport;
-import com.google.api.client.http.*;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestFactory;
+import com.google.api.client.http.HttpResponseException;
+import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.gson.GsonFactory;
@@ -69,7 +71,7 @@ public class GoogleGeocoding {
     private void buildCache(int size) {
         addressCache = CacheBuilder.newBuilder().maximumSize(size).build(new CacheLoader<String, GeocodingResponse>() {
             @Override
-            public GeocodingResponse load(String address) throws Exception {
+            public GeocodingResponse load(String address) {
                 try {
                     GeocodingUrl url = GeocodingUrl.get(address);
                     HttpRequest request = factory.buildGetRequest(url);
@@ -135,22 +137,13 @@ public class GoogleGeocoding {
             // build logger
             geocoder.logger = Logger.getLogger(GoogleGeocoding.class.getName());
             // build transport
-            HttpTransport transport;
-            if (appEngine) {
-                transport = UrlFetchTransport.getDefaultInstance();
-            } else {
-                NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
-                if (proxy != null) {
-                    builder.setProxy(proxy);
-                }
-                transport = builder.build();
+            NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
+            if (proxy != null) {
+                builder.setProxy(proxy);
             }
+            HttpTransport transport = builder.build();
             // build factory
-            geocoder.factory = transport.createRequestFactory(new HttpRequestInitializer() {
-                public void initialize(HttpRequest request) {
-                    request.setParser(new JsonObjectParser(new GsonFactory()));
-                }
-            });
+            geocoder.factory = transport.createRequestFactory(request -> request.setParser(new JsonObjectParser(new GsonFactory())));
             // address cache
             geocoder.buildCache(cacheSize);
             // return product
