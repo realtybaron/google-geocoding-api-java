@@ -1,16 +1,15 @@
 package com.socotech.location;
 
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpResponseException;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonObjectParser;
-import com.google.api.client.json.gson.GsonFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.maps.GeoApiContext;
+import com.google.maps.GeocodingApi;
+import com.google.maps.model.GeocodingResult;
+import com.google.maps.model.LatLng;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -20,13 +19,15 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by IntelliJ IDEA. User: marc Date: Jan 14, 2011 Time: 6:13:33 AM
  */
 public class GoogleGeocoding {
+
+    private GeoApiContext context;
+    private LoadingCache<String, GeocodingResponse> addressCache;
+
     /**
      * Use free-text address to determine geo location
      *
@@ -38,7 +39,7 @@ public class GoogleGeocoding {
         try {
             return addressCache.get(address);
         } catch (ExecutionException e) {
-            logger.log(Level.SEVERE, e.getMessage(), e);
+            logger.debug(e.getMessage());
             throw new IOException(e);
         }
     }
@@ -51,18 +52,12 @@ public class GoogleGeocoding {
      * @return address
      * @throws IOException in case of failure
      */
-    public GeocodingResponse findByGeometry(BigDecimal lat, BigDecimal lng) throws IOException {
+    public GeocodingResponse findByGeometry(BigDecimal lat, BigDecimal lng) throws Exception {
         lat = lat.setScale(6, RoundingMode.HALF_EVEN);
         lng = lng.setScale(6, RoundingMode.HALF_EVEN);
-        try {
-            GeocodingUrl url = GeocodingUrl.get(lat, lng);
-            url.key = key;
-            HttpRequest request = factory.buildGetRequest(url);
-            return request.execute().parseAs(GeocodingResponse.class);
-        } catch (HttpResponseException e) {
-            logger.log(Level.INFO, e.getStatusMessage());
-            throw e;
-        }
+        LatLng latLng = new LatLng(lat.doubleValue(), lng.doubleValue());
+        GeocodingResult[] results = GeocodingApi.reverseGeocode(context, latLng).await();
+        return new GeocodingResponse(results);
     }
 
     /**
@@ -73,33 +68,15 @@ public class GoogleGeocoding {
             @Override
             public GeocodingResponse load(String address) {
                 try {
-                    GeocodingUrl url = GeocodingUrl.get(address);
-                    HttpRequest request = factory.buildGetRequest(url);
-                    return request.execute().parseAs(GeocodingResponse.class);
+                    GeocodingResult[] results = GeocodingApi.geocode(context, address).await();
+                    return new GeocodingResponse(results);
                 } catch (Exception e) {
-                    logger.log(Level.SEVERE, e.getMessage(), e);
+                    logger.error(e.getMessage(), e);
                     return null;
                 }
             }
         });
     }
-
-    /**
-     * Key
-     */
-    private String key;
-    /**
-     * Logger
-     */
-    private Logger logger;
-    /**
-     * Request Factory
-     */
-    private HttpRequestFactory factory;
-    /**
-     * cache used to reduce total requests to Google's Geocoding service
-     */
-    private LoadingCache<String, GeocodingResponse> addressCache;
 
     public static class Builder {
         private int cacheSize = 100;
@@ -132,22 +109,14 @@ public class GoogleGeocoding {
 
         public GoogleGeocoding build() {
             GoogleGeocoding geocoder = new GoogleGeocoding();
-            // set key
-            geocoder.key = apiKey;
-            // build logger
-            geocoder.logger = Logger.getLogger(GoogleGeocoding.class.getName());
             // build transport
-            NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
-            if (proxy != null) {
-                builder.setProxy(proxy);
-            }
-            HttpTransport transport = builder.build();
-            // build factory
-            geocoder.factory = transport.createRequestFactory(request -> request.setParser(new JsonObjectParser(new GsonFactory())));
+            geocoder.context = new GeoApiContext.Builder().apiKey(apiKey).build();
             // address cache
             geocoder.buildCache(cacheSize);
             // return product
             return geocoder;
         }
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(GoogleGeocoding.class);
 }

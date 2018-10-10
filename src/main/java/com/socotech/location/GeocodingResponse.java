@@ -1,68 +1,42 @@
 package com.socotech.location;
 
-import com.google.api.client.util.Key;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.maps.model.*;
 
-import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by IntelliJ IDEA. User: marc Date: Jan 14, 2011 Time: 6:06:32 AM
  */
 public class GeocodingResponse {
-    @Key("status")
-    public String status;
-    /**
-     * Holds address components for subsequent retrieval
-     */
+
     private Address address;
-    /**
-     * Holds geometry components for subsequent retrieval
-     */
-    private Geometry geometry;
-    /**
-     * Geocoding results
-     */
-    @Key("results")
-    public List<GeocodingResult> results = Lists.newArrayList();
+    private GeocodingResult[] results;
 
     /**
-     * Determine if address is precise
+     * Default constructor
      *
-     * @return true, if not a partial match
+     * @param results geocoding results
      */
-    @Deprecated
-    public boolean isPrecise() {
-        Optional<GeocodingResult> result = this.findResult();
-        if (!result.isPresent()) {
-            return false;
-        } else {
-            List<String> types = result.get().types;
-            List<ResultType> typesAsEnums = types.stream().map(ResultType::valueOf).collect(Collectors.toList());
-            return !Collections.disjoint(typesAsEnums, ResultType.PRECISE);
-        }
+    public GeocodingResponse(GeocodingResult[] results) {
+        this.results = results;
     }
 
     /**
      * Determine if address is precise
      *
-     * @param unit unit or apt number
      * @return true, if not a partial match
      */
-    public boolean isPrecise(String unit) {
-        Optional<GeocodingResult> result = this.findResult();
-        if (!result.isPresent()) {
+    public boolean isPrecise() {
+        if (this.results.length == 0) {
             return false;
-        } else if (Strings.isNullOrEmpty(unit)) {
-            List<String> types = result.get().types;
-            return types.contains(ResultType.street_address.name());
         } else {
-            List<String> types = result.get().types;
-            return types.contains(ResultType.subpremise.name());
+            Stream<GeocodingResult> stream = Arrays.stream(results);
+            return stream.anyMatch((Predicate<GeocodingResult>) input -> !Collections.disjoint(Arrays.stream(input.types).collect(Collectors.toList()), PRECISE));
         }
     }
 
@@ -71,13 +45,21 @@ public class GeocodingResponse {
      *
      * @return geometry
      */
-    @Nullable
-    public Geometry geometry() {
-        if (this.geometry == null) {
-            Optional<GeocodingResult> result = this.findResult();
-            result.ifPresent(geocodingResult -> this.geometry = geocodingResult.geometry);
+    public Optional<Geometry> geometry() {
+        Optional<Geometry> geometry = Optional.empty();
+        Optional<AddressType> mostPrecise = Optional.empty();
+        for (GeocodingResult result : results) {
+            List<AddressType> types = Arrays.stream(result.types).collect(Collectors.toList());
+            for (AddressType type : ORDER) {
+                if (types.contains(type)) {
+                    if (!mostPrecise.isPresent() || ORDER.indexOf(type) > ORDER.indexOf(mostPrecise.get())) {
+                        geometry = Optional.of(result.geometry);
+                        mostPrecise = Optional.of(type);
+                    }
+                }
+            }
         }
-        return this.geometry;
+        return geometry;
     }
 
     /**
@@ -85,25 +67,75 @@ public class GeocodingResponse {
      *
      * @return address
      */
-    @Nullable
-    public Address address() {
+    public Optional<Address> address() {
         if (this.address == null) {
-            Optional<GeocodingResult> result = this.findResult();
-            result.ifPresent(geocodingResult -> this.address = new Address().copyFrom(geocodingResult));
+            Optional<AddressType> mostPrecise = Optional.empty();
+            Optional<GeocodingResult> geocodingResult = Optional.empty();
+            for (GeocodingResult result : results) {
+                List<AddressType> types = Arrays.stream(result.types).collect(Collectors.toList());
+                for (AddressType type : ORDER) {
+                    if (types.contains(type)) {
+                        if (!geocodingResult.isPresent() || ORDER.indexOf(type) > ORDER.indexOf(mostPrecise.get())) {
+                            mostPrecise = Optional.of(type);
+                            geocodingResult = Optional.of(result);
+                        }
+                    }
+                }
+            }
+            if (geocodingResult.isPresent()) {
+                this.address = new Address();
+                for (AddressComponent component : geocodingResult.get().addressComponents) {
+                    List<AddressComponentType> components = Lists.newArrayList(component.types);
+                    if (components.contains(AddressComponentType.ROUTE)) {
+                        this.address.streetName = component.longName;
+                    } else if (components.contains(AddressComponentType.COUNTRY)) {
+                        this.address.country = component.longName;
+                        this.address.countryCode = component.shortName;
+                    } else if (components.contains(AddressComponentType.SUBPREMISE)) {
+                        this.address.unitNumber = component.longName;
+                    } else if (components.contains(AddressComponentType.POSTAL_CODE)) {
+                        this.address.postalCode = component.longName;
+                    } else if (components.contains(AddressComponentType.STREET_NUMBER)) {
+                        this.address.streetNumber = component.longName;
+                    } else if (components.contains(AddressComponentType.NEIGHBORHOOD)) {
+                        this.address.neighborhood = component.longName;
+                    } else if (components.contains(AddressComponentType.ADMINISTRATIVE_AREA_LEVEL_1)) {
+                        this.address.stateName = component.longName;
+                        this.address.stateAbbreviation = component.shortName;
+                    } else if (components.contains(AddressComponentType.ADMINISTRATIVE_AREA_LEVEL_2)) {
+                        this.address.countyName = component.longName.replace(" County", "").trim();
+                    }
+                    // resolve city
+                    if (Strings.isNullOrEmpty(this.address.city)) {
+                        if (components.contains(AddressComponentType.LOCALITY)) {
+                            this.address.city = component.longName;
+                        } else if (components.contains(AddressComponentType.SUBLOCALITY)) {
+                            this.address.city = component.longName;
+                        }
+                    }
+                }
+            }
         }
-        return this.address;
+        return Optional.ofNullable(this.address);
     }
 
-    private Optional<GeocodingResult> findResult() {
-        Optional<GeocodingResult> rooftop = results.stream().filter(input -> input.geometry.locationType.equalsIgnoreCase("ROOFTOP")).findFirst();
-        Optional<GeocodingResult> interpolated = results.stream().filter(input -> input.geometry.locationType.equalsIgnoreCase("RANGE_INTERPOLATED")).findFirst();
-        Optional<GeocodingResult> geometricCenter = results.stream().filter(input -> input.geometry.locationType.equalsIgnoreCase("GEOMETRIC_CENTER")).findFirst();
-        if (rooftop.isPresent()) {
-            return rooftop;
-        } else if (interpolated.isPresent()) {
-            return interpolated;
-        } else {
-            return geometricCenter;
-        }
-    }
+    /**
+     * Increasing order of precision
+     */
+    private static final List<AddressType> ORDER = Lists.newArrayList(
+            AddressType.COUNTRY,
+            AddressType.ADMINISTRATIVE_AREA_LEVEL_1,
+            AddressType.POSTAL_CODE,
+            AddressType.ADMINISTRATIVE_AREA_LEVEL_2,
+            AddressType.SUBLOCALITY,
+            AddressType.LOCALITY,
+            AddressType.NEIGHBORHOOD,
+            AddressType.ROUTE,
+            AddressType.INTERSECTION,
+            AddressType.STREET_ADDRESS,
+            AddressType.SUBPREMISE,
+            AddressType.PREMISE
+    );
+
+    private static final Collection<AddressType> PRECISE = Lists.newArrayList(AddressType.PREMISE, AddressType.SUBPREMISE, AddressType.STREET_ADDRESS);
 }
