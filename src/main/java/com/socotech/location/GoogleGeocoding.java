@@ -8,8 +8,6 @@ import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;
 import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -39,7 +37,6 @@ public class GoogleGeocoding {
         try {
             return addressCache.get(address);
         } catch (ExecutionException e) {
-            logger.debug(e.getMessage());
             throw new IOException(e);
         }
     }
@@ -71,7 +68,6 @@ public class GoogleGeocoding {
                     GeocodingResult[] results = GeocodingApi.geocode(context, address).await();
                     return new GeocodingResponse(results);
                 } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
                     return null;
                 }
             }
@@ -118,5 +114,4 @@ public class GoogleGeocoding {
         }
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(GoogleGeocoding.class);
 }
