@@ -9,7 +9,6 @@ import com.google.maps.GeocodingApi;
 import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.Inet4Address;
@@ -24,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 public class GoogleGeocoding {
 
     private GeoApiContext context;
+    private LoadingCache<LatLng, GeocodingResponse> latLngCache;
     private LoadingCache<String, GeocodingResponse> addressCache;
 
     /**
@@ -31,13 +31,12 @@ public class GoogleGeocoding {
      *
      * @param address free-text address
      * @return geometry
-     * @throws IOException in case of failure
      */
-    public GeocodingResponse findByAddress(String address) throws IOException {
+    public GeocodingResponse findByAddress(String address) {
         try {
             return addressCache.get(address);
         } catch (ExecutionException e) {
-            throw new IOException(e);
+            return GeocodingResponse.EMPTY;
         }
     }
 
@@ -47,20 +46,33 @@ public class GoogleGeocoding {
      * @param lat latitude
      * @param lng longitude
      * @return address
-     * @throws IOException in case of failure
      */
-    public GeocodingResponse findByGeometry(BigDecimal lat, BigDecimal lng) throws Exception {
+    public GeocodingResponse findByGeometry(BigDecimal lat, BigDecimal lng) {
         lat = lat.setScale(6, RoundingMode.HALF_EVEN);
         lng = lng.setScale(6, RoundingMode.HALF_EVEN);
         LatLng latLng = new LatLng(lat.doubleValue(), lng.doubleValue());
-        GeocodingResult[] results = GeocodingApi.reverseGeocode(context, latLng).await();
-        return new GeocodingResponse(results);
+        try {
+            return latLngCache.get(latLng);
+        } catch (ExecutionException e) {
+            return GeocodingResponse.EMPTY;
+        }
     }
 
     /**
      * Build internal address cache
      */
     private void buildCache(int size) {
+        latLngCache = CacheBuilder.newBuilder().maximumSize(size).build(new CacheLoader<LatLng, GeocodingResponse>() {
+            @Override
+            public GeocodingResponse load(LatLng latLng) {
+                try {
+                    GeocodingResult[] results = GeocodingApi.reverseGeocode(context, latLng).await();
+                    return new GeocodingResponse(results);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        });
         addressCache = CacheBuilder.newBuilder().maximumSize(size).build(new CacheLoader<String, GeocodingResponse>() {
             @Override
             public GeocodingResponse load(String address) {

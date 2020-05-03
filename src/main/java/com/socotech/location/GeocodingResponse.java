@@ -137,5 +137,7 @@ public class GeocodingResponse {
             AddressType.PREMISE
     );
 
+    public static final GeocodingResponse EMPTY = new GeocodingResponse(new GeocodingResult[0]);
+
     private static final Collection<AddressType> PRECISE = Lists.newArrayList(AddressType.PREMISE, AddressType.SUBPREMISE, AddressType.STREET_ADDRESS);
 }
