@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
  * Created by IntelliJ IDEA. User: marc Date: Jan 14, 2011 Time: 5:45:25 AM
  */
 public class Address {
+
     public String city;
     public String country;
     public String stateName;
@@ -45,4 +46,5 @@ public class Address {
     public String toString() {
         return new StringBuilder(line1()).append(", ").append(line2()).append(", ").append(this.country).toString();
     }
+
 }
