@@ -67,7 +67,7 @@ public class GoogleGeocoding {
             public GeocodingResponse load(LatLng latLng) {
                 try {
                     GeocodingResult[] results = GeocodingApi.reverseGeocode(context, latLng).await();
-                    return new GeocodingResponse(results);
+                    return new GeocodingResponse(true, results);
                 } catch (Exception e) {
                     return null;
                 }
@@ -78,7 +78,7 @@ public class GoogleGeocoding {
             public GeocodingResponse load(String address) {
                 try {
                     GeocodingResult[] results = GeocodingApi.geocode(context, address).await();
-                    return new GeocodingResponse(results);
+                    return new GeocodingResponse(true, results);
                 } catch (Exception e) {
                     return null;
                 }
