@@ -14,16 +14,28 @@ import java.util.stream.Stream;
  */
 public class GeocodingResponse {
 
+    private boolean success;
     private Address address;
     private GeocodingResult[] results;
 
     /**
      * Default constructor
      *
+     * @param success request status
      * @param results geocoding results
      */
-    public GeocodingResponse(GeocodingResult[] results) {
+    public GeocodingResponse(boolean success, GeocodingResult[] results) {
+        this.success = success;
         this.results = results;
+    }
+
+    /**
+     * Result status
+     *
+     * @return true, if request was successful
+     */
+    public boolean isSuccess() {
+        return success;
     }
 
     /**
@@ -137,7 +149,7 @@ public class GeocodingResponse {
             AddressType.PREMISE
     );
 
-    public static final GeocodingResponse EMPTY = new GeocodingResponse(new GeocodingResult[0]);
+    public static final GeocodingResponse EMPTY = new GeocodingResponse(false, new GeocodingResult[0]);
 
     private static final Collection<AddressType> PRECISE = Lists.newArrayList(AddressType.PREMISE, AddressType.SUBPREMISE, AddressType.STREET_ADDRESS);
 }
