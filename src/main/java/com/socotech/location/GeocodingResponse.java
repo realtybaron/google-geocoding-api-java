@@ -123,6 +123,8 @@ public class GeocodingResponse {
                             this.address.city = component.longName;
                         } else if (components.contains(AddressComponentType.SUBLOCALITY)) {
                             this.address.city = component.longName;
+                        } else if (components.contains(AddressComponentType.POSTAL_TOWN)) {
+                            this.address.city = component.longName;
                         }
                     }
                 }
