@@ -15,7 +15,6 @@ import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.UnknownHostException;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Created by IntelliJ IDEA. User: marc Date: Jan 14, 2011 Time: 6:13:33 AM
@@ -35,7 +34,7 @@ public class GoogleGeocoding {
     public GeocodingResponse findByAddress(String address) {
         try {
             return addressCache.get(address);
-        } catch (ExecutionException e) {
+        } catch (Exception e) {
             return GeocodingResponse.EMPTY;
         }
     }
@@ -53,7 +52,7 @@ public class GoogleGeocoding {
         LatLng latLng = new LatLng(lat.doubleValue(), lng.doubleValue());
         try {
             return latLngCache.get(latLng);
-        } catch (ExecutionException e) {
+        } catch (Exception e) {
             return GeocodingResponse.EMPTY;
         }
     }
