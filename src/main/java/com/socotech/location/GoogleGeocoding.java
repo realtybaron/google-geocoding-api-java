@@ -33,7 +33,20 @@ public class GoogleGeocoding {
      * @return geometry
      */
     public GeocodingResponse findByAddress(String address) {
+        return this.findByAddress(address, false);
+    }
+
+    /**
+     * Use free-text address to determine geo location
+     *
+     * @param address free-text address
+     * @return geometry
+     */
+    public GeocodingResponse findByAddress(String address, boolean refresh) {
         try {
+            if (refresh) {
+                addressCache.invalidate(address);
+            }
             return addressCache.get(address);
         } catch (ExecutionException e) {
             return GeocodingResponse.EMPTY;
@@ -48,42 +61,28 @@ public class GoogleGeocoding {
      * @return address
      */
     public GeocodingResponse findByGeometry(BigDecimal lat, BigDecimal lng) {
+        return this.findByGeometry(lat, lng, false);
+    }
+
+    /**
+     * Use geo-coordinates to determine nearest address
+     *
+     * @param lat latitude
+     * @param lng longitude
+     * @return address
+     */
+    public GeocodingResponse findByGeometry(BigDecimal lat, BigDecimal lng, boolean refresh) {
         lat = lat.setScale(6, RoundingMode.HALF_EVEN);
         lng = lng.setScale(6, RoundingMode.HALF_EVEN);
         LatLng latLng = new LatLng(lat.doubleValue(), lng.doubleValue());
         try {
+            if (refresh) {
+                latLngCache.invalidate(latLng);
+            }
             return latLngCache.get(latLng);
         } catch (ExecutionException e) {
             return GeocodingResponse.EMPTY;
         }
-    }
-
-    /**
-     * Build internal address cache
-     */
-    private void buildCache(int size) {
-        latLngCache = CacheBuilder.newBuilder().maximumSize(size).build(new CacheLoader<LatLng, GeocodingResponse>() {
-            @Override
-            public GeocodingResponse load(LatLng latLng) {
-                try {
-                    GeocodingResult[] results = GeocodingApi.reverseGeocode(context, latLng).await();
-                    return new GeocodingResponse(true, results);
-                } catch (Exception e) {
-                    return null;
-                }
-            }
-        });
-        addressCache = CacheBuilder.newBuilder().maximumSize(size).build(new CacheLoader<String, GeocodingResponse>() {
-            @Override
-            public GeocodingResponse load(String address) {
-                try {
-                    GeocodingResult[] results = GeocodingApi.geocode(context, address).await();
-                    return new GeocodingResponse(true, results);
-                } catch (Exception e) {
-                    return null;
-                }
-            }
-        });
     }
 
     public static class Builder {
@@ -120,7 +119,28 @@ public class GoogleGeocoding {
             // build transport
             geocoder.context = new GeoApiContext.Builder().apiKey(apiKey).build();
             // address cache
-            geocoder.buildCache(cacheSize);
+            geocoder.latLngCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new CacheLoader<LatLng, GeocodingResponse>() {
+                @Override
+                public GeocodingResponse load(LatLng latLng) {
+                    try {
+                        GeocodingResult[] results = GeocodingApi.reverseGeocode(geocoder.context, latLng).await();
+                        return new GeocodingResponse(true, results);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }
+            });
+            geocoder.addressCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new CacheLoader<String, GeocodingResponse>() {
+                @Override
+                public GeocodingResponse load(String address) {
+                    try {
+                        GeocodingResult[] results = GeocodingApi.geocode(geocoder.context, address).await();
+                        return new GeocodingResponse(true, results);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }
+            });
             // return product
             return geocoder;
         }
