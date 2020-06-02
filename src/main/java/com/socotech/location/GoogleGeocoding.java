@@ -24,6 +24,7 @@ public class GoogleGeocoding {
     private GeoApiContext context;
     private LoadingCache<LatLng, GeocodingResponse> latLngCache;
     private LoadingCache<String, GeocodingResponse> addressCache;
+    private LoadingCache<String, GeocodingResponse> countryCache;
 
     /**
      * Use free-text address to determine geo location
@@ -47,6 +48,33 @@ public class GoogleGeocoding {
                 addressCache.invalidate(address);
             }
             return addressCache.get(address);
+        } catch (Exception e) {
+            return GeocodingResponse.EMPTY;
+        }
+    }
+
+    /**
+     * Use free-text address to determine geo location
+     *
+     * @param country free-text address
+     * @return geometry
+     */
+    public GeocodingResponse findByCountry(String country) {
+        return this.findByCountry(country, false);
+    }
+
+    /**
+     * Use free-text address to determine geo location
+     *
+     * @param country free-text address
+     * @return geometry
+     */
+    public GeocodingResponse findByCountry(String country, boolean refresh) {
+        try {
+            if (refresh) {
+                countryCache.invalidate(country);
+            }
+            return countryCache.get(country);
         } catch (Exception e) {
             return GeocodingResponse.EMPTY;
         }
@@ -134,6 +162,17 @@ public class GoogleGeocoding {
                 public GeocodingResponse load(String address) {
                     try {
                         GeocodingResult[] results = GeocodingApi.geocode(geocoder.context, address).await();
+                        return new GeocodingResponse(true, results);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }
+            });
+            geocoder.countryCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new CacheLoader<String, GeocodingResponse>() {
+                @Override
+                public GeocodingResponse load(String country) {
+                    try {
+                        GeocodingResult[] results = GeocodingApi.geocode(geocoder.context, String.join(" ", country, "country")).await();
                         return new GeocodingResponse(true, results);
                     } catch (Exception e) {
                         return null;
