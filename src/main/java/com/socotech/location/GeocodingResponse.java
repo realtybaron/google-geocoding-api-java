@@ -138,6 +138,7 @@ public class GeocodingResponse {
      */
     private static final List<AddressType> ORDER = Lists.newArrayList(
             AddressType.COUNTRY,
+            AddressType.POLITICAL,
             AddressType.ADMINISTRATIVE_AREA_LEVEL_1,
             AddressType.POSTAL_CODE,
             AddressType.ADMINISTRATIVE_AREA_LEVEL_2,
