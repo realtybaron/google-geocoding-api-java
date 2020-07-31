@@ -1,6 +1,5 @@
 package com.socotech.location;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.maps.model.*;
@@ -48,7 +47,7 @@ public class GeocodingResponse {
             return false;
         } else {
             Stream<GeocodingResult> stream = Arrays.stream(results);
-            return stream.anyMatch((Predicate<GeocodingResult>) input -> !Collections.disjoint(Arrays.stream(input.types).collect(Collectors.toList()), PRECISE));
+            return stream.anyMatch(input -> !Collections.disjoint(Arrays.stream(input.types).collect(Collectors.toList()), PRECISE));
         }
     }
 
