@@ -13,9 +13,9 @@ import java.util.stream.Stream;
  */
 public class GeocodingResponse {
 
-    private boolean success;
     private Address address;
-    private GeocodingResult[] results;
+    private final boolean success;
+    private final GeocodingResult[] results;
 
     /**
      * Default constructor

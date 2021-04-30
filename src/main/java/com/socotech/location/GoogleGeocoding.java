@@ -172,7 +172,7 @@ public class GoogleGeocoding {
                 @Override
                 public GeocodingResponse load(String country) {
                     try {
-                        GeocodingResult[] results = GeocodingApi.geocode(geocoder.context, String.join(" ", country, "country")).await();
+                        GeocodingResult[] results = GeocodingApi.geocode(geocoder.context, String.join(" ", "country", country)).await();
                         return new GeocodingResponse(true, results);
                     } catch (Exception e) {
                         return null;

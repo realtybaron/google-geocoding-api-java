@@ -18,7 +18,7 @@ public class GoogleGeocodingTest {
 
     @Before
     public void onSetup() {
-        this.googleGeocoding = new GoogleGeocoding.Builder().apiKey("AIzaSyCgk-CIEFxwdBbWxM3VVu0EDwBIEq4ZjpE").build();
+        this.googleGeocoding = new GoogleGeocoding.Builder().apiKey("AIzaSyCY82JPV99c78wbu-ddzPvpk2silESSiHk").build();
     }
 
     @Test
