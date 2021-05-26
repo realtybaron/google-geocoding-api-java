@@ -15,7 +15,7 @@ public class GoogleTimeZoneTest {
 
     @Before
     public void onSetup() {
-        this.googleTimeZoner = new GoogleTimeZoner.Builder().apiKey("AIzaSyCY82JPV99c78wbu-ddzPvpk2silESSiHk").build();
+        this.googleTimeZoner = new GoogleTimeZoner.Builder().apiKey("AIzaSyB6jX_cokiQ6ga5Sj12TkLXdxzVsKB5WPA").build();
     }
 
     @Test
